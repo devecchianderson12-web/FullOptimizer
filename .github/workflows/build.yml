@@ -1,0 +1,43 @@
+name: Build FullOptimizer
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compilar FullOptimizer.exe
+        shell: powershell
+        run: ./build.ps1
+
+      - name: Empaquetar portable
+        shell: powershell
+        run: Compress-Archive -Path dist/FullOptimizer.exe, README.md -DestinationPath dist/FullOptimizer-portable.zip -Force
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: FullOptimizer
+          path: |
+            dist/FullOptimizer.exe
+            dist/FullOptimizer-portable.zip
+
+      - name: Publicar release (solo en tags v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/FullOptimizer.exe
+            dist/FullOptimizer-portable.zip
+          generate_release_notes: true

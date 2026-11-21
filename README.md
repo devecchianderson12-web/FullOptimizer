@@ -29,5 +29,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 El exe queda en `dist\FullOptimizer.exe`. El ícono se regenera con `tools\make-icon.ps1`.
 
 ## GitHub Actions
-`.github/workflows/build.yml` compila en cada push y deja el exe como *artifact*.
-Para publicar una release con el exe: `git tag v1.0.0 && git push --tags`.
+`.github/workflows/build.yml` compila en cada push a `main`/`master` y publica automáticamente
+una release nueva (`v1.0.<n>`) que contiene solo `FullOptimizer.exe`. La versión también queda
+grabada en el exe (título de la ventana y Propiedades > Detalles).
+Para cambiar la versión mayor, editá `MAJOR_MINOR` en el workflow.

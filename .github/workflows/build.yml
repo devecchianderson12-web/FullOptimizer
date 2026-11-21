@@ -1,43 +1,47 @@
 name: Build FullOptimizer
 
+# Cada vez que se sube código a main/master se compila y se publica
+# una release nueva (v1.0.1, v1.0.2, ...) que contiene SOLO FullOptimizer.exe.
 on:
   push:
     branches: [ main, master ]
-    tags: [ 'v*' ]
-  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  MAJOR_MINOR: '1.0'   # cambialo (ej. '2.0') para saltar de versión mayor
+
 jobs:
-  build:
+  release:
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Calcular versión
+        id: ver
+        shell: powershell
+        run: |
+          $v = "$env:MAJOR_MINOR.$env:GITHUB_RUN_NUMBER"
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Versión: $v"
+
       - name: Compilar FullOptimizer.exe
         shell: powershell
-        run: ./build.ps1
+        run: ./build.ps1 -Version ${{ steps.ver.outputs.version }}
 
-      - name: Empaquetar portable
-        shell: powershell
-        run: Compress-Archive -Path dist/FullOptimizer.exe, README.md -DestinationPath dist/FullOptimizer-portable.zip -Force
-
-      - name: Subir artefacto
-        uses: actions/upload-artifact@v4
-        with:
-          name: FullOptimizer
-          path: |
-            dist/FullOptimizer.exe
-            dist/FullOptimizer-portable.zip
-
-      - name: Publicar release (solo en tags v*)
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publicar release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/FullOptimizer.exe
-            dist/FullOptimizer-portable.zip
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: FullOptimizer v${{ steps.ver.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          files: dist/FullOptimizer.exe
+          make_latest: true
           generate_release_notes: true

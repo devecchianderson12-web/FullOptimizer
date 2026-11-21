@@ -19,12 +19,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
+// La versión (AssemblyVersion/FileVersion) la genera build.ps1 en cada compilación.
 [assembly: AssemblyTitle("FullOptimizer")]
 [assembly: AssemblyProduct("FullOptimizer")]
 [assembly: AssemblyDescription("Optimizador de Windows segun el hardware")]
 [assembly: AssemblyCopyright("FullOptimizer")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 
 namespace FullOptimizer
 {
@@ -834,7 +833,7 @@ namespace FullOptimizer
         public MainForm()
         {
             SuspendLayout();
-            Text = "FullOptimizer";
+            Text = "FullOptimizer v" + AppVersion;
             FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Theme.Bg; ForeColor = Theme.Text;
@@ -849,6 +848,11 @@ namespace FullOptimizer
             AutoScaleMode = AutoScaleMode.Dpi;
             ResumeLayout(false);
             Shown += async (s, e) => await DetectAsync();
+        }
+
+        static string AppVersion
+        {
+            get { var v = Assembly.GetExecutingAssembly().GetName().Version; return v.Major + "." + v.Minor + "." + v.Build; }
         }
 
         static Icon LoadIcon(int size)
@@ -909,7 +913,7 @@ namespace FullOptimizer
             pic.Image = LoadIconImage();
             head.Controls.Add(pic);
             L(head, "FullOptimizer", 86, 10, 300, 38, 20f, true, Theme.Text);
-            L(head, "Optimización inteligente según tu hardware", 89, 48, 340, 22, 9.5f, false, Theme.Muted);
+            L(head, "Optimización inteligente según tu hardware  ·  v" + AppVersion, 89, 48, 420, 22, 9.5f, false, Theme.Muted);
             string[] names = { "Optimizar", "Inicio de Windows", "Registro" };
             int x = 560;
             for (int i = 0; i < names.Length; i++)
